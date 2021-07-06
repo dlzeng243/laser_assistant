@@ -1,4 +1,4 @@
-# laser_assistant
+# laser_assistant from Matt Valentine
 A tool to generate joints for laser cutting
 
 ## Prerequisites
