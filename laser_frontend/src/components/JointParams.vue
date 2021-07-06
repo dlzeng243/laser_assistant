@@ -10,6 +10,7 @@
         <option>Bolt</option>
         <option>Flat</option>
         <option>Divider</option>
+        <option>TSlot</option>
       </select>
 
       <span class="paramlabel">Joint alignment</span>
