@@ -7,6 +7,7 @@ then
 fi
 
 
+pip3 install --user -r requirements.txt
 python3 laser_flask.py
 
 # export FLASK_APP=laser_flask.py
