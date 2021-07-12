@@ -148,3 +148,6 @@ dmypy.json
 .pyre/
 .gitignore
 output.json
+
+# npm
+laser_frontend/node_modules/

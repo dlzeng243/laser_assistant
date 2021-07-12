@@ -77,6 +77,7 @@ export default {
       setjp: {
         joint_type: "Box",
         joint_align: "Inside",
+        joint_angle: 0.0,
         fit: "Clearance",
         tabsize: 10.0,
         tabspace: 20.0,

@@ -28,6 +28,19 @@
       <input name="kerf" v-model="newKerf" type="number" step="0.01" @change="applyParams" />
     </p>
     <button @click="downloadsvg">Download</button>
+    <div class="loader">
+      <input
+        class="loadbutton"
+        type="file"
+        id="KerfSheet"
+        aria-label="upload kerf spreadsheet"
+        accept=".csv"
+        @change="loadFile"
+      />
+      <div class="buttonholder" @click="passClick">
+        <span class="loadlabel">Upload kerf spreadsheet</span>
+      </div>
+    </div>
   </div>
 </template>
 

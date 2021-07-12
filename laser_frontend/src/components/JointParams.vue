@@ -21,6 +21,14 @@
         <option>Outside</option>
       </select>
 
+      <span class="paramlabel">Joint angle</span>
+      <input
+        name="jointangle"
+        v-model="jp.joint_angle"
+        type="number"
+        step="0.1"
+      />
+
       <span class="paramlabel" v-show="jp.joint_type!=='Bolt'">Fit</span>
       <select name="fit" v-model="jp.fit" v-show="jp.joint_type!=='Bolt'">
         <option disabled value>Please select one</option>
@@ -72,6 +80,7 @@
         <option>M2.5</option>
         <option>M3</option>
         <option>M4</option>
+        <option>N/A</option>
       </select>
 
       <span class="paramlabel" v-show="jp.joint_type==='Bolt'">Number of Bolts</span>
@@ -127,6 +136,7 @@ export default {
   methods: {
     confirmjoint: function () {
       console.log("confirm");
+      this.jp.joint_angle = parseFloat(this.jp.joint_angle);
       this.jp.tabsize = parseFloat(this.jp.tabsize);
       this.jp.tabspace = parseFloat(this.jp.tabspace);
       this.jp.tabnum = parseInt(this.jp.tabnum);
