@@ -21,13 +21,43 @@ VUE_CLIENT = {"origins": "*"}
 app.config['CORS_HEADERS'] = 'Content-Type'
 # cors = CORS(app, resources={r"*": VUE_CLIENT})  # pylint: disable=invalid-name
 
+# CSV
+csv = None
+
+def get_svg_response(filename):
+    """returns a response with svg file"""
+    svgfile = open(filename, "r")
+    svgdata = svgfile.read()
+    svgfile.close()
+    response = app.response_class(
+        response=svgdata,
+        status=200,
+        mimetype='image/svg+xml'
+    )
+    return response
+
 
 @app.route('/')
 def main_interface():
     """This is the root of the html interface"""
-    # return redirect('http://localhost:8080/') # for development
+    # return redirect('http://localhost:8080') # for development
     return redirect('index.html')
 
+@app.route('/save_csv', methods=['POST'])
+def save_csv():
+    """saves kerf csv"""
+    csv = json.loads(request.form['csvInput'])
+    return None
+
+@app.route('/get_kerf', methods=['GET'])
+def get_kerf():
+    """returns kerf"""
+    thickness = json.loads(request.form['Thickness'])
+    material = json.loads(request.form['Material'])    
+    if csv is None:
+        return None
+    return None
+    
 
 @app.route('/get_design', methods=['GET', 'POST'])
 def get_design():
@@ -60,19 +90,6 @@ def get_model():
     svg_file.close()
     model = svg_to_model('input.svg')
     return jsonify(model)
-
-
-def get_svg_response(filename):
-    """returns a response with svg file"""
-    svgfile = open(filename, "r")
-    svgdata = svgfile.read()
-    svgfile.close()
-    response = app.response_class(
-        response=svgdata,
-        status=200,
-        mimetype='image/svg+xml'
-    )
-    return response
 
 
 if __name__ == '__main__':

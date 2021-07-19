@@ -2,8 +2,8 @@
 
 if [ ! -d "/svgpathtools" ] 
 then
-  git clone https://github.com/mathandy/svgpathtools.git
-  python svgpathtools/setup.py install
+  git clone https://github.com/mathandy/svgpathtools
+  python3 svgpathtools/setup.py install
 fi
 
 

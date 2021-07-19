@@ -25,8 +25,8 @@ cors = CORS(app, resources={r"*": VUE_CLIENT})  # pylint: disable=invalid-name
 @app.route('/')
 def main_interface():
     """This is the root of the html interface"""
-    # return redirect('http://localhost:8080/') # for development
-    return redirect('index.html')
+    return redirect('http://localhost:8080/') # for development
+    # return redirect('index.html')
 
 
 @app.route('/get_design', methods=['GET', 'POST'])

@@ -17,6 +17,10 @@
       :scaleFactor="laserParams.scaleFactor"
       @download="downloadsvg"
     />
+    <CSV
+      v-if="svgLoaded"
+      v-on:incsv="loadCSV"
+    />
     <LoadSVG v-if="!svgLoaded" v-on:insvg="loadSVG" />
     <JointParams
       v-show="showJointParams"
@@ -34,9 +38,10 @@ import EdgeSVG from "./components/EdgeSVG";
 import Parameters from "./components/Parameters";
 import LoadSVG from "./components/LoadSVG";
 import JointParams from "./components/JointParams";
+import CSV from './components/CSV.vue';
 const axios = require("axios").default;
 const apiserver = "/"; // deploy
-// const apiserver = "http://127.0.0.1:5000/"; // develop
+// const apiserver = "http://localhost:8080/"; // develop
 
 export default {
   name: "App",
@@ -47,9 +52,11 @@ export default {
     Parameters,
     LoadSVG,
     JointParams,
+    CSV,
   },
   data: function () {
     return {
+      csvLoaded: false,
       svgLoaded: false,
       showJointParams: false,
       outputModel: "<svg/>",
@@ -63,7 +70,7 @@ export default {
       },
       laserParams: {
         thickness: 3.0,
-        kerf: 0.05,
+        kerf: 0.00,
         material: "Wood",
         scaleFactor: 1.0,
       },
@@ -90,6 +97,36 @@ export default {
     };
   },
   methods: {
+    loadCSV: function (csvInput) {
+      this.csvLoaded = true;
+      let formData = new FormData();
+      formData.append("csvInput", JSON.stringify(csvInput));
+      axios
+        .post(apiserver + "save_csv", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then(() => {
+          console.log("hi")
+          this.updateKerf();
+        });
+    },
+    updateKerf: function () {
+      let formData = new FormData();
+      formData.append("Material", JSON.stringify(this.laserParams.material));
+      formData.append("Thickness", JSON.stringify(this.laserParams.thickness));
+      axios
+        .get(apiserver + "get_kerf", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          console.log("bye")
+          console.log(response)
+        });
+    },
     loadSVG: function (svgInput) {
       this.svgLoaded = true;
       let formData = new FormData();
