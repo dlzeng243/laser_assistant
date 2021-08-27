@@ -5,13 +5,13 @@ import json
 import math
 
 from laser_path_utils import (get_length, get_start, get_angle,
-                              move_path, rotate_path, scale_path,
+                              move_path, path_string_to_points, rotate_path, scale_path,
                               get_overlapping, get_not_overlapping,
                               paths_to_loops, loops_to_paths,
                               separate_closed_paths, is_inside,
                               path_to_segments)
 from laser_clipper import get_difference, get_offset_loop, get_union
-import svgpathtools.svgpathtools as SVGPT
+import svgpathtools as SVGPT
 from laser_svg_parser import separate_perims_from_cuts, parse_svgfile
 # from joint_generators import FlatJoint, BoxJoint, TslotJoint
 
@@ -138,6 +138,126 @@ def process_joints(model, joints, parameters):
                 model['tree'][face]['paths'], cut)
     return model
 
+def get_slotted_joint_adds(joint, _, parameters):
+    """generator for slotted joints"""
+    """Nothing to add for slotted"""
+    adds = {}
+
+    return adds
+
+def get_slotted_joint_cuts(joint, _, parameters):
+    """genereator for slotted joints"""
+    """Cut out the slots"""
+    """Ask Nur about fits"""
+    cuts = {}
+    thickness = parameters['thickness'] 
+    if thickness > 4.5:
+        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
+                'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
+                'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
+    else:
+        fits = {
+            'Wood': {'Clearance': -0.05, 'Friction': 0.04, 'Press': 0.05},
+            'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
+            'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
+    patha = joint['edge_a']['d']
+    pathb = joint['edge_b']['d']
+    facea = joint['edge_a']['face']
+    faceb = joint['edge_b']['face']
+
+    alignment = joint['joint_parameters']['joint_align']
+    fit = fits[parameters['material']][joint['joint_parameters']['fit']]
+
+    intersection = joint['joint_parameters']['intersection']
+    percentage = joint['joint_parameters']['percentage']
+    epsilon = 0.000001
+    print(intersection)
+    print(percentage)
+    tabdist1 = joint['joint_parameters']['tabDist1']
+    tabdist2 = joint['joint_parameters']['tabDist2']
+    tabslopex, tabslopey = joint['joint_parameters']['tabSlope']
+    '''pointsa = path_string_to_points(patha) 
+    starta = patha[0]
+    enda = patha[len(patha) - 1]'''
+    angledtab = thickness
+    if abs(tabslopex) > epsilon:
+        angle = math.sin(math.atan(tabslopey / tabslopex))
+        if abs(angle) > epsilon:
+            angledtab = abs(thickness / angle)
+    '''if tabslopey > 0:
+        tabslopex *= -1
+        tabslopey *= -1
+    print(tabdist1)
+    print(tabdist2)
+    print(angledtab)
+    cuta = f"M {0} {0} " + \
+           f"L {tabdist1} {0}" + \
+           f"L {tabdist1 + intersection * percentage * tabslopex} {intersection * percentage * tabslopey}" + \
+           f"L {tabdist1 + intersection * percentage * tabslopex + (tabslopey * thickness)} {intersection * percentage * tabslopey + (-tabslopex * thickness)}" + \
+           f"L {tabdist1 + angledtab} {0}" + \
+           f"L {tabdist1 + tabdist2 + angledtab} {0}"'''
+    cuta = f"M {0} {0} " + \
+           f"L {tabdist1} {0}" + \
+           f"L {tabdist1} {intersection * percentage}" + \
+           f"L {tabdist1 + angledtab} {intersection * percentage}" + \
+           f"L {tabdist1 + angledtab} {0}" + \
+           f"L {tabdist1 + tabdist2 + angledtab} {0}"
+    basedist1 = joint['joint_parameters']['baseDist1']
+    basedist2 = joint['joint_parameters']['baseDist2']
+    baseslopex, baseslopey = joint['joint_parameters']['baseSlope']
+
+    '''pointsb = path_string_to_points(pathb) 
+    startb = pathb[0]
+    endb = pathb[len(pathb) - 1]'''
+    angledbase = thickness
+    if abs(baseslopex) > epsilon:
+        angle = math.sin(math.atan(baseslopey / baseslopex))
+        if abs(angle) > epsilon:
+            angledbase = abs(thickness / angle)
+    '''if baseslopey > 0:
+        baseslopex *= -1
+        baseslopey *= -1
+    print(basedist1)
+    print(basedist2)
+    print(angledbase)
+    print("\n")
+    print(joint['joint_parameters']['tabSlope'])
+    print(joint['joint_parameters']['baseSlope'])
+    print("\n")
+    cutb = f"M {0} {0} " + \
+           f"L {basedist1} {0}" + \
+           f"L {basedist1 + intersection * (1-percentage) * baseslopex} {intersection * (1-percentage) * baseslopey}" + \
+           f"L {basedist1 + intersection * (1-percentage) * baseslopex + (baseslopey * thickness)} {intersection * (1-percentage) * baseslopey + (-baseslopex * thickness)}" + \
+           f"L {basedist1 + angledbase} {0}" + \
+           f"L {basedist1 + basedist2 + angledbase} {0}"
+    print(cuta)
+    print(cutb)
+    print("\n")'''
+    cutb = f"M {0} {0} " + \
+           f"L {basedist1} {0}" + \
+           f"L {basedist1} {intersection * (1-percentage)}" + \
+           f"L {basedist1 + angledbase} {intersection * (1-percentage)}" + \
+           f"L {basedist1 + angledbase} {0}" + \
+           f"L {basedist1 + basedist2 + angledbase} {0}"
+    lengtha = get_length(patha)
+    lengthb = get_length(pathb)
+
+    cuta = align_joint(cuta, lengtha, thickness, alignment)
+    cutb = align_joint(cutb, lengthb, thickness, alignment)
+    '''
+    print(patha)
+    print(pathb)
+    print("\n")
+    print(cuta)
+    print(cutb)'''
+    cuts[facea] = [place_new_edge_path(cuta, patha)]
+    cuts[faceb] = [place_new_edge_path(cutb, pathb)]
+    '''
+    print("\n")
+    print(cuts[facea])
+    print(cuts[faceb])'''
+
+    return cuts
 
 def get_box_joint_adds(joint, _, parameters):
     """generator for box joints"""
@@ -171,7 +291,7 @@ def get_box_joint_cuts(joint, _, parameters):
     angle = joint['joint_parameters']['angle']
     thickness = parameters['thickness'] * math.sin(angle)
     if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
+        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': -0.075},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
                 'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
     else:
@@ -398,6 +518,7 @@ def get_bolt_joint_cuts(joint, _, parameters):
 
 def get_tslot_joint_adds(joint, _, parameters):
     """generator for tslot joints"""
+    # https://docs.google.com/spreadsheets/d/1WmfN8BqZF7OF0b_wrQmnSpbe4QhH35GthL3uRCC2ex8/edit#gid=0
     adds = {}
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
@@ -695,7 +816,8 @@ def get_joint_adds(joint, model, parameters):
                'Tab-and-Slot': get_tabslot_joint_adds,
                'Interlocking': get_interlock_joint_adds,
                'Bolt': get_bolt_joint_adds,
-               'TSlot': get_tslot_joint_adds}
+               'TSlot': get_tslot_joint_adds,
+               'Slotted': get_slotted_joint_adds}
     adds = addfunc.get(jointtype, lambda j, m, c: {})(joint, model, parameters)
     return adds
 
@@ -709,7 +831,8 @@ def get_joint_cuts(joint, model, parameters):
                'Bolt': get_bolt_joint_cuts,
                'Divider': get_divider_joint_cuts,
                'Flat': get_flat_joint_cuts,
-               'TSlot': get_tslot_joint_cuts}
+               'TSlot': get_tslot_joint_cuts,
+               'Slotted': get_slotted_joint_cuts}
     cuts = cutfunc.get(jointtype, lambda j, m, c: {})(joint, model, parameters)
     return cuts
 

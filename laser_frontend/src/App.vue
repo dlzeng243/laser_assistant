@@ -40,8 +40,8 @@ import LoadSVG from "./components/LoadSVG";
 import JointParams from "./components/JointParams";
 import CSV from './components/CSV.vue';
 const axios = require("axios").default;
-const apiserver = "/"; // deploy
-// const apiserver = "http://localhost:8080/"; // develop
+// const apiserver = "/"; // deploy
+const apiserver = "http://localhost:5000/"; // develop
 
 export default {
   name: "App",
@@ -84,7 +84,7 @@ export default {
       setjp: {
         joint_type: "Box",
         joint_align: "Inside",
-        joint_angle: 0.0,
+        angle: Math.PI / 2,
         fit: "Clearance",
         tabsize: 10.0,
         tabspace: 20.0,
@@ -108,7 +108,6 @@ export default {
           },
         })
         .then(() => {
-          console.log("hi")
           this.updateKerf();
         });
     },
@@ -117,14 +116,28 @@ export default {
       formData.append("Material", JSON.stringify(this.laserParams.material));
       formData.append("Thickness", JSON.stringify(this.laserParams.thickness));
       axios
-        .get(apiserver + "get_kerf", formData, {
+        .post(apiserver + "update_kerf", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         })
         .then((response) => {
-          console.log("bye")
-          console.log(response)
+          this.laserParams.kerf = response.data
+          this.updateOutput()
+        });
+    },
+    loadSettings: function () {
+      let formData = new FormData();
+      formData.append("Material", JSON.stringify(this.laserParams.material));
+      formData.append("Thickness", JSON.stringify(this.laserParams.thickness));
+      axios
+        .post(apiserver + "load_settings", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then(() => {
+          this.updateOutput();
         });
     },
     loadSVG: function (svgInput) {

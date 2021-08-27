@@ -1,6 +1,5 @@
 aiohttp==2.3.10
-Flask==1.1.1
 numpy
 svgwrite
 pyclipper
-
+Flask

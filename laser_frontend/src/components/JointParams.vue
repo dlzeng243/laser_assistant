@@ -11,6 +11,7 @@
         <option>Flat</option>
         <option>Divider</option>
         <option>TSlot</option>
+        <option>Slotted</option>
       </select>
 
       <span class="paramlabel">Joint alignment</span>
@@ -24,13 +25,13 @@
       <span class="paramlabel">Joint angle</span>
       <input
         name="jointangle"
-        v-model="jp.joint_angle"
+        v-model="jp.angle"
         type="number"
         step="0.1"
       />
 
-      <span class="paramlabel" v-show="jp.joint_type!=='Bolt'">Fit</span>
-      <select name="fit" v-model="jp.fit" v-show="jp.joint_type!=='Bolt'">
+      <span class="paramlabel" v-show="jp.joint_type!=='Bolt' && jp.joint_type!=='TSlot'">Fit</span>
+      <select name="fit" v-model="jp.fit" v-show="jp.joint_type!=='Bolt' && jp.joint_type!=='TSlot'">
         <option disabled value>Please select one</option>
         <option>Clearance</option>
         <option>Friction</option>
@@ -73,8 +74,8 @@
         step="1"
       />
 
-      <span class="paramlabel" v-show="jp.joint_type==='Bolt'">Bolt size</span>
-      <select name="boltsize" v-model="jp.boltsize" v-show="jp.joint_type==='Bolt'">
+      <span class="paramlabel" v-show="jp.joint_type==='Bolt' || jp.joint_type==='TSlot'">Bolt size</span>
+      <select name="boltsize" v-model="jp.boltsize" v-show="jp.joint_type==='Bolt' || jp.joint_type==='TSlot'">
         <option disabled value>Please select one</option>
         <option>M2</option>
         <option>M2.5</option>
@@ -83,7 +84,7 @@
         <option>N/A</option>
       </select>
 
-      <span class="paramlabel" v-show="jp.joint_type==='Bolt'">Number of Bolts</span>
+      <span class="paramlabel" v-show="jp.joint_type==='Bolt' || jp.joint_type==='TSlot'">Number of Bolts</span>
       <input
         name="boltnum"
         v-model="jp.boltnum"
@@ -92,7 +93,7 @@
         step="1"
       />
 
-      <span class="paramlabel" v-show="jp.joint_type==='Bolt'">Space between Bolts</span>
+      <span class="paramlabel" v-show="jp.joint_type==='Bolt' || jp.joint_type==='TSlot'">Space between Bolts</span>
       <input
         name="boltspace"
         v-model="jp.boltspace"
@@ -101,7 +102,7 @@
         step="0.1"
       />
 
-      <span class="paramlabel" v-show="jp.joint_type==='Bolt'">Bolt Length(mm)</span>
+      <span class="paramlabel" v-show="jp.joint_type==='Bolt' || jp.joint_type==='TSlot'">Bolt Length(mm)</span>
       <input
         name="boltlength"
         v-model="jp.boltlength"
@@ -136,13 +137,13 @@ export default {
   methods: {
     confirmjoint: function () {
       console.log("confirm");
-      this.jp.joint_angle = parseFloat(this.jp.joint_angle);
+      this.jp.angle = parseFloat(this.jp.angle);
       this.jp.tabsize = parseFloat(this.jp.tabsize);
       this.jp.tabspace = parseFloat(this.jp.tabspace);
       this.jp.tabnum = parseInt(this.jp.tabnum);
       this.jp.boltnum = parseInt(this.jp.boltnum);
-      this.jp.boltspace = parseInt(this.jp.boltspace);
-      this.jp.boltlength = parseInt(this.jp.boltlength);
+      this.jp.boltspace = parseFloat(this.jp.boltspace);
+      this.jp.boltlength = parseFloat(this.jp.boltlength);
       this.$emit("confirm", this.jp);
     },
     flipjoint: function () {

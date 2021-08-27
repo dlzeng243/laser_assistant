@@ -2,13 +2,17 @@
 
 import json
 
-# from flask_cors import CORS
+from flask_cors import CORS
 
-from flask import Flask, request, redirect, jsonify
+from flask import Flask, request, redirect, jsonify, url_for
 
 from laser_assistant import (svg_to_model,
                              get_original_model, process_web_outputsvg)
 from laser_svg_parser import model_to_svg_file
+
+import csv
+
+from collections import defaultdict
 
 # tell flask to host the front end
 VUE_STATIC = "./laser_frontend/dist/"
@@ -19,10 +23,8 @@ app = Flask(__name__, static_folder=VUE_STATIC)  # pylint: disable=invalid-name
 # Allow VUE client to make requests to this API server
 VUE_CLIENT = {"origins": "*"}
 app.config['CORS_HEADERS'] = 'Content-Type'
-# cors = CORS(app, resources={r"*": VUE_CLIENT})  # pylint: disable=invalid-name
+cors = CORS(app, resources={r"*": VUE_CLIENT})  # pylint: disable=invalid-name
 
-# CSV
-csv = None
 
 def get_svg_response(filename):
     """returns a response with svg file"""
@@ -40,24 +42,37 @@ def get_svg_response(filename):
 @app.route('/')
 def main_interface():
     """This is the root of the html interface"""
-    # return redirect('http://localhost:8080') # for development
-    return redirect('index.html')
+    return redirect('http://localhost:8080') # for development
+    # return redirect('index.html')
 
-@app.route('/save_csv', methods=['POST'])
+@app.route('/save_csv', methods=['GET', 'POST'])
 def save_csv():
     """saves kerf csv"""
-    csv = json.loads(request.form['csvInput'])
-    return None
+    file = json.loads(request.form['csvInput'])
+    # material = str(json.loads(request.form['Material']))
+    # thickness = str(json.loads(request.form['Thickness']))
+    print(file)
+    f = open('csvInput.txt', 'w')
+    f.write(file)
+    return "hi"
 
-@app.route('/get_kerf', methods=['GET'])
-def get_kerf():
-    """returns kerf"""
-    thickness = json.loads(request.form['Thickness'])
-    material = json.loads(request.form['Material'])    
-    if csv is None:
-        return None
-    return None
-    
+@app.route('/update_kerf', methods=['GET', 'POST'])
+def update_kerf():
+    f = open('csvInput.txt', 'r')
+    csv_dicts = f.read()
+    a = csv_dicts.splitlines()
+    for row in a:
+        print(row.split(sep = ","))
+    '''    print(csv_dicts)
+    keys2 = []
+    for row in csv_dicts:
+        keys2.append(row[" "])
+        row.pop(" ")
+    print(keys2)
+    d = dict()
+    for i, val in enumerate(keys2):
+        d[val] = csv_dicts[i]'''
+    return "1"
 
 @app.route('/get_design', methods=['GET', 'POST'])
 def get_design():
