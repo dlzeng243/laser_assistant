@@ -148,18 +148,17 @@ def get_slotted_joint_adds(joint, _, parameters):
 def get_slotted_joint_cuts(joint, _, parameters):
     """genereator for slotted joints"""
     """Cut out the slots"""
-    """Ask Nur about fits"""
     cuts = {}
     thickness = parameters['thickness'] 
     if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
+        fits = {'Wood': {'Clearance': -0.2, 'Friction': 0.05, 'Press': 0.1},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-                'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
+                'Acrylic': {'Clearance': -0.15, 'Friction': 0.1, 'Press': 0.0}}
     else:
         fits = {
-            'Wood': {'Clearance': -0.05, 'Friction': 0.04, 'Press': 0.05},
+            'Wood': {'Clearance': -0.2, 'Friction': 0.05, 'Press': 0.1},
             'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-            'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
+            'Acrylic': {'Clearance': -0.15, 'Friction': 0.1, 'Press': 0.0}}
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
     facea = joint['edge_a']['face']
@@ -269,7 +268,11 @@ def get_box_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     adda = f"M {0} {0} "+f"L {0} {thickness} " + \
@@ -289,14 +292,18 @@ def get_box_joint_cuts(joint, _, parameters):
     """generator for box joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': -0.075},
+        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
                 'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
     else:
         fits = {
-            'Wood': {'Clearance': -0.05, 'Friction': 0.04, 'Press': 0.05},
+            'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
             'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
             'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
     patha = joint['edge_a']['d']
@@ -358,7 +365,11 @@ def get_bolt_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     adda = f"M {0} {thickness} "+f"L {0} {-thickness} " + \
@@ -400,7 +411,11 @@ def get_bolt_joint_cuts(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     bolt_size = joint['joint_parameters']['boltsize']
@@ -527,7 +542,11 @@ def get_tslot_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     adda = f"M {0} {thickness} "+f"L {0} {-thickness} " + \
@@ -569,7 +588,11 @@ def get_tslot_joint_cuts(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     bolt_size = joint['joint_parameters']['boltsize']
@@ -655,7 +678,11 @@ def get_tabslot_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     adda = f"M {0} {thickness} "+f"L {0} {-thickness} " + \
@@ -678,14 +705,14 @@ def get_tabslot_joint_cuts(joint, _, parameters):
     angle = joint['joint_parameters']['angle']
     thickness = parameters['thickness'] * math.sin(angle)
     if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
+        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.1},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
                 'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
     else:
         fits = {
-            'Wood': {'Clearance': -0.05, 'Friction': 0.04, 'Press': 0.05},
+            'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.1},
             'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-            'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
+            'Acrylic': {'Clearance': -0.2, 'Friction': 0.0, 'Press': 0.0}}
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
     facea = joint['edge_a']['face']
@@ -746,7 +773,11 @@ def get_interlock_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     alignment = joint['joint_parameters']['joint_align']
 
     adda = f"M {0} {thickness} "+f"L {0} {-thickness} " + \
@@ -767,7 +798,11 @@ def get_interlock_joint_cuts(joint, _, parameters):
     """generator for interlock joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     if thickness > 4.5:
         fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
@@ -841,7 +876,11 @@ def get_divider_joint_cuts(joint, _, parameters):
     """generator for divider joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     if thickness > 4.5:
         fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
@@ -888,7 +927,11 @@ def get_flat_joint_cuts(joint, _, parameters):
     cuts = {}
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
+    thickness = parameters['thickness']
+    if angle < math.pi / 2:
+        thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
+    else:
+        thickness = thickness * math.sin(angle)
     if thickness > 4.5:
         fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
                 'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},

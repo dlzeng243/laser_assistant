@@ -97,12 +97,14 @@ export default {
     };
   },
   methods: {
-    loadCSV: function (csvInput) {
+    loadCSV: function () {
       this.csvLoaded = true;
-      let formData = new FormData();
-      formData.append("csvInput", JSON.stringify(csvInput));
+
+      var form2 = new FormData();
+      console.log(form2)
+      form2.append("file", this.file);
       axios
-        .post(apiserver + "save_csv", formData, {
+        .post(apiserver + "save_csv", form2, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

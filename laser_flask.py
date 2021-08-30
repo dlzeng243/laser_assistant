@@ -10,9 +10,11 @@ from laser_assistant import (svg_to_model,
                              get_original_model, process_web_outputsvg)
 from laser_svg_parser import model_to_svg_file
 
-import csv
+import os
+from flask import Flask, flash, request, redirect, url_for
+from werkzeug.utils import secure_filename
 
-from collections import defaultdict
+UPLOAD_FOLDER = './upload_csv'
 
 # tell flask to host the front end
 VUE_STATIC = "./laser_frontend/dist/"
@@ -48,13 +50,15 @@ def main_interface():
 @app.route('/save_csv', methods=['GET', 'POST'])
 def save_csv():
     """saves kerf csv"""
-    file = json.loads(request.form['csvInput'])
-    # material = str(json.loads(request.form['Material']))
-    # thickness = str(json.loads(request.form['Thickness']))
+    file = request.form['file']
     print(file)
     f = open('csvInput.txt', 'w')
     f.write(file)
-    return "hi"
+    if request.method == 'POST':
+        filename = "csv_Input.txt"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return ""
+    return ""
 
 @app.route('/update_kerf', methods=['GET', 'POST'])
 def update_kerf():

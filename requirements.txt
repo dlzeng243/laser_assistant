@@ -3,3 +3,4 @@ numpy
 svgwrite
 pyclipper
 Flask
+werkzeug

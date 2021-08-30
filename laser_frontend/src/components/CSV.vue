@@ -4,6 +4,7 @@
         class="loadbutton_kerf"
         type="file"
         id="KerfSheet"
+        ref="file"
         aria-label="upload kerf spreadsheet"
         accept=".csv"
         @change="loadFile"
@@ -22,10 +23,8 @@ export default {
   methods: {
     loadFile: async function (event) {
       const csvfile = event.target.files[0];
-      const csvcontent = await new Response(csvfile).text();
-      console.log(csvcontent);
-      console.log(JSON.stringify(csvcontent))
-      this.$emit("incsv", csvcontent)
+      this.file = this.$refs.file.files[0];
+      this.$emit("incsv", csvfile)
       return;
     },
     passClickCSV: function () {
