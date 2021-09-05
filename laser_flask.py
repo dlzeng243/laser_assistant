@@ -7,12 +7,15 @@ from flask_cors import CORS
 from flask import Flask, request, redirect, jsonify, url_for
 
 from laser_assistant import (svg_to_model,
-                             get_original_model, process_web_outputsvg)
+                             get_original_model, process_web_outputsvg, LaserParameters)
 from laser_svg_parser import model_to_svg_file
 
 import os
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
+
+import csv
+import sys
 
 UPLOAD_FOLDER = './upload_csv'
 
@@ -47,36 +50,32 @@ def main_interface():
     return redirect('http://localhost:8080') # for development
     # return redirect('index.html')
 
-@app.route('/save_csv', methods=['GET', 'POST'])
-def save_csv():
-    """saves kerf csv"""
-    file = request.form['file']
-    print(file)
-    f = open('csvInput.txt', 'w')
-    f.write(file)
-    if request.method == 'POST':
-        filename = "csv_Input.txt"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return ""
+@app.route('/presets', methods=['POST'])
+def save_presets():
+    """saves presets csv"""
+    print("NOTE: preset saving not implemented yet!")
+    #TODO: actually parse the preset CSV to make sure it has all the needed parameters
+    #file = request.form['file']
+    #print(file)
+    #with open('presets.csv', 'w') as f:
+    #    f.write(file)
     return ""
 
-@app.route('/update_kerf', methods=['GET', 'POST'])
-def update_kerf():
-    f = open('csvInput.txt', 'r')
-    csv_dicts = f.read()
-    a = csv_dicts.splitlines()
-    for row in a:
-        print(row.split(sep = ","))
-    '''    print(csv_dicts)
-    keys2 = []
-    for row in csv_dicts:
-        keys2.append(row[" "])
-        row.pop(" ")
-    print(keys2)
-    d = dict()
-    for i, val in enumerate(keys2):
-        d[val] = csv_dicts[i]'''
-    return "1"
+@app.route('/presets', methods=['GET'])
+def load_presets():
+    """loads presets csv"""
+    presets = []
+    #based on: https://docs.python.org/2/library/csv.html
+    with open('presets.csv', 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            try:
+                LaserParameters(row) #see if row can be parsed into LaserParameters
+                presets.append(row)
+            except:
+                print("Skipping row because it failed to parse:", row)
+    return json.dumps(presets)
+
 
 @app.route('/get_design', methods=['GET', 'POST'])
 def get_design():
@@ -95,6 +94,8 @@ def get_output():
     if request.method == 'POST':
         model = json.loads(request.form['inputModel'])
         params = json.loads(request.form['laserParams'])
+        print("Got parameters: ", params) #DEBUG
+        params = LaserParameters(params)
         new_model = process_web_outputsvg(model, params)
         model_to_svg_file(new_model, design=model)
     return get_svg_response('output.svg')

@@ -16,6 +16,62 @@ from laser_svg_parser import separate_perims_from_cuts, parse_svgfile
 # from joint_generators import FlatJoint, BoxJoint, TslotJoint
 
 
+class LaserParameters:
+    def __init__(self, d):
+        """Read parameters from a dictionary; throw on missing parameters"""
+
+        #material sheet size:
+        self.thickness = float(d['thickness'])
+        self.width = float(d['width'])
+        self.height = float(d['height'])
+
+        #compensate for cut width:
+        self.kerf = float(d['kerf'])
+
+        def floatOrNan(val):
+            #This is a hack to get around our sheet having blank cells and cells with "NA" in them:
+            # TODO: fix the sheet and remove this hack!
+            if val == 'NA': return float('nan')
+            elif val == '': return 0.0
+            else: return float(val)
+
+        #joint fit parameters:
+        self.boxC = floatOrNan(d['boxC'])
+        self.boxL = floatOrNan(d['boxL'])
+        self.boxI = floatOrNan(d['boxI'])
+        self.tabC = floatOrNan(d['tabC'])
+        self.tabL = floatOrNan(d['tabL'])
+        self.tabI = floatOrNan(d['tabI'])
+        self.slotC = floatOrNan(d['slotC'])
+        self.slotL = floatOrNan(d['slotL'])
+        self.slotI = floatOrNan(d['slotI'])
+
+        #perhaps....
+        #self.clearance = float(d['clearance']) #generic "clearance" value for flat joints?
+
+        #output style (appended to svg's style):
+        self.style = d['style']
+
+        #misc (for preset system):
+        self.preset = d['preset']
+        self.notes = d['notes']
+
+        #scale is optional:
+        if 'scale' in d:
+            self.scale = float(d['scale'])
+        else:
+            self.scale = 1.0
+
+    FIT_MAP = {
+        'Clearance':'C',
+        'Friction':'L',
+        'Press':'I'
+    }
+    def get_fit(self, joint, fit):
+        return getattr(self, joint + self.FIT_MAP[fit])
+
+
+
 def make_blank_model(attrib=None):
     """Make a valid blank model"""
     if attrib is None:
@@ -149,23 +205,15 @@ def get_slotted_joint_cuts(joint, _, parameters):
     """genereator for slotted joints"""
     """Cut out the slots"""
     cuts = {}
-    thickness = parameters['thickness'] 
-    if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.2, 'Friction': 0.05, 'Press': 0.1},
-                'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-                'Acrylic': {'Clearance': -0.15, 'Friction': 0.1, 'Press': 0.0}}
-    else:
-        fits = {
-            'Wood': {'Clearance': -0.2, 'Friction': 0.05, 'Press': 0.1},
-            'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-            'Acrylic': {'Clearance': -0.15, 'Friction': 0.1, 'Press': 0.0}}
+    thickness = parameters.thickness
+
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
     facea = joint['edge_a']['face']
     faceb = joint['edge_b']['face']
 
     alignment = joint['joint_parameters']['joint_align']
-    fit = fits[parameters['material']][joint['joint_parameters']['fit']]
+    fit = parameters.get_fit('slot', joint['joint_parameters']['fit'])
 
     intersection = joint['joint_parameters']['intersection']
     percentage = joint['joint_parameters']['percentage']
@@ -268,7 +316,7 @@ def get_box_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -292,20 +340,11 @@ def get_box_joint_cuts(joint, _, parameters):
     """generator for box joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
         thickness = thickness * math.sin(angle)
-    if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
-                'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-                'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
-    else:
-        fits = {
-            'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.075},
-            'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-            'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
     facea = joint['edge_a']['face']
@@ -317,7 +356,7 @@ def get_box_joint_cuts(joint, _, parameters):
     tabnum = joint['joint_parameters']['tabnum']
     alignment = joint['joint_parameters']['joint_align']
 
-    fit = fits[parameters['material']][joint['joint_parameters']['fit']]
+    fit = parameters.get_fit('box', joint['joint_parameters']['fit'])
 
     sega = tabsize*tabnum + tabspace*(tabnum-1) - fit
     segb = tabsize*tabnum + tabspace*(tabnum-1) + fit
@@ -365,7 +404,7 @@ def get_bolt_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -411,7 +450,7 @@ def get_bolt_joint_cuts(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -542,7 +581,7 @@ def get_tslot_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -588,7 +627,7 @@ def get_tslot_joint_cuts(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -678,7 +717,7 @@ def get_tabslot_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -703,16 +742,8 @@ def get_tabslot_joint_cuts(joint, _, parameters):
     """generator for tabslot joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness'] * math.sin(angle)
-    if thickness > 4.5:
-        fits = {'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.1},
-                'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-                'Acrylic': {'Clearance': -0.1, 'Friction': 0.0, 'Press': 0.0}}
-    else:
-        fits = {
-            'Wood': {'Clearance': -0.05, 'Friction': 0.05, 'Press': 0.1},
-            'None': {'Clearance': 0.0, 'Friction': 0.0, 'Press': 0.0},
-            'Acrylic': {'Clearance': -0.2, 'Friction': 0.0, 'Press': 0.0}}
+    thickness = parameters.thickness * math.sin(angle)
+
     patha = joint['edge_a']['d']
     pathb = joint['edge_b']['d']
     facea = joint['edge_a']['face']
@@ -722,9 +753,9 @@ def get_tabslot_joint_cuts(joint, _, parameters):
     tabsize = joint['joint_parameters']['tabsize']
     tabspace = joint['joint_parameters']['tabspace']
     tabnum = joint['joint_parameters']['tabnum']
-    thickness = parameters['thickness'] - \
-        fits[parameters['material']]['Clearance']
-    fit = fits[parameters['material']][joint['joint_parameters']['fit']]
+    thickness = parameters.thickness - \
+        parameters.get_fit('tab', 'Clearance') #TODO: why?
+    fit = parameters.get_fit('tab', joint['joint_parameters']['fit'])
     alignment = joint['joint_parameters']['joint_align']
 
     sega = tabsize*tabnum + tabspace*(tabnum-1) - fit
@@ -773,7 +804,7 @@ def get_interlock_joint_adds(joint, _, parameters):
     lengtha = get_length(patha)
     lengthb = get_length(pathb)
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -798,7 +829,7 @@ def get_interlock_joint_cuts(joint, _, parameters):
     """generator for interlock joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -820,7 +851,7 @@ def get_interlock_joint_cuts(joint, _, parameters):
     lengthb = get_length(pathb)
     joint_length = min(lengtha, lengthb)
     cut_length = joint_length / 2
-    # thickness = parameters['thickness']
+    # thickness = parameters.thickness
     alignment = joint['joint_parameters']['joint_align']
     fit = fits[parameters['material']][joint['joint_parameters']['fit']]
 
@@ -876,7 +907,7 @@ def get_divider_joint_cuts(joint, _, parameters):
     """generator for divider joints"""
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -898,7 +929,7 @@ def get_divider_joint_cuts(joint, _, parameters):
     lengthb = get_length(pathb)
     joint_length = min(lengtha, lengthb)
     cut_length = joint_length / 2
-    # thickness = parameters['thickness']
+    # thickness = parameters.thickness
     alignment = joint['joint_parameters']['joint_align']
     fit = fits[parameters['material']][joint['joint_parameters']['fit']]
 
@@ -927,7 +958,7 @@ def get_flat_joint_cuts(joint, _, parameters):
     cuts = {}
     cuts = {}
     angle = joint['joint_parameters']['angle']
-    thickness = parameters['thickness']
+    thickness = parameters.thickness
     if angle < math.pi / 2:
         thickness = thickness * math.tan(math.pi / 2 - angle) + thickness / math.cos(math.pi / 2 - angle)
     else:
@@ -947,7 +978,7 @@ def get_flat_joint_cuts(joint, _, parameters):
     # faceb = joint['edge_b']['face']
     lengtha = get_length(patha)
     # lengthb = get_length(pathb)
-    # thickness = parameters['thickness']
+    # thickness = parameters.thickness
     alignment = joint['joint_parameters']['joint_align']
     fit = fits[parameters['material']]['Clearance']
 
@@ -979,7 +1010,7 @@ def align_joint(path, length, thickness, alignment):
 
 def kerf_offset(model, parameters):
     """Applies a kerf offset based upon material and laser parameters"""
-    kerf_size = parameters['kerf']
+    kerf_size = parameters.kerf
     original_tree = model['tree']
     tree = {}
     for face, shapes in original_tree.items():
@@ -1115,12 +1146,12 @@ def scale_design(design_model, scale):
 def process_web_outputsvg(design_model, parameters):
     """process joints and offset kerf"""
     # scaling
-    scaled_model = scale_design(design_model, parameters['scaleFactor'])
+    scaled_model = scale_design(design_model, parameters.scale)
     # Processing:
     output_model = get_processed_model(scaled_model, parameters)
     # Styling:
     output_model['attrib']['style'] = f"fill:none;stroke:#ff0000;stroke-linejoin:round;" + \
-        f"stroke-width:0.1px;stroke-linecap:round;stroke-opacity:0.5"
+        f"stroke-width:0.1px;stroke-linecap:round;stroke-opacity:0.5;" + parameters.style
 
     return output_model
 

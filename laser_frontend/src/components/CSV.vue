@@ -23,8 +23,9 @@ export default {
   methods: {
     loadFile: async function (event) {
       const csvfile = event.target.files[0];
-      this.file = this.$refs.file.files[0];
-      this.$emit("incsv", csvfile)
+      const csvcontent = await new Response(csvfile).text();
+      console.log(csvcontent);
+      this.$emit("incsv", csvcontent)
       return;
     },
     passClickCSV: function () {

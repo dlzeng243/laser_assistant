@@ -11,15 +11,8 @@
     <Parameters
       v-if="svgLoaded"
       v-on:update="updateParams"
-      :thickness="laserParams.thickness"
-      :kerf="laserParams.kerf"
-      :material="laserParams.material"
-      :scaleFactor="laserParams.scaleFactor"
       @download="downloadsvg"
-    />
-    <CSV
-      v-if="svgLoaded"
-      v-on:incsv="loadCSV"
+      :presets="presets"
     />
     <LoadSVG v-if="!svgLoaded" v-on:insvg="loadSVG" />
     <JointParams
@@ -38,7 +31,6 @@ import EdgeSVG from "./components/EdgeSVG";
 import Parameters from "./components/Parameters";
 import LoadSVG from "./components/LoadSVG";
 import JointParams from "./components/JointParams";
-import CSV from './components/CSV.vue';
 const axios = require("axios").default;
 // const apiserver = "/"; // deploy
 const apiserver = "http://localhost:5000/"; // develop
@@ -52,10 +44,10 @@ export default {
     Parameters,
     LoadSVG,
     JointParams,
-    CSV,
   },
   data: function () {
     return {
+      presets: [],
       csvLoaded: false,
       svgLoaded: false,
       showJointParams: false,
@@ -67,12 +59,6 @@ export default {
         },
         joint_index: 1,
         joints: {},
-      },
-      laserParams: {
-        thickness: 3.0,
-        kerf: 0.00,
-        material: "Wood",
-        scaleFactor: 1.0,
       },
       AB: true,
       active_joint_name: "Joint0",
@@ -96,37 +82,14 @@ export default {
       },
     };
   },
+  created: function() {
+    this.loadPresets();
+  },
   methods: {
-    loadCSV: function () {
-      this.csvLoaded = true;
-
-      var form2 = new FormData();
-      console.log(form2)
-      form2.append("file", this.file);
-      axios
-        .post(apiserver + "save_csv", form2, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then(() => {
-          this.updateKerf();
-        });
-    },
-    updateKerf: function () {
-      let formData = new FormData();
-      formData.append("Material", JSON.stringify(this.laserParams.material));
-      formData.append("Thickness", JSON.stringify(this.laserParams.thickness));
-      axios
-        .post(apiserver + "update_kerf", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((response) => {
-          this.laserParams.kerf = response.data
-          this.updateOutput()
-        });
+    loadPresets: async function () {
+      const presets = await (await fetch(apiserver + "presets")).json();
+      console.log("Loaded presets:\n", presets);
+      this.presets = presets;
     },
     loadSettings: function () {
       let formData = new FormData();
