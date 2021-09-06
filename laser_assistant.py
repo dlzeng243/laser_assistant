@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # laser_assistant.py
 """A tool to generate joints for laser cutting"""
 import xml.etree.ElementTree as ET
@@ -12,8 +13,11 @@ from laser_path_utils import (get_length, get_start, get_angle,
                               path_to_segments)
 from laser_clipper import get_difference, get_offset_loop, get_union
 import svgpathtools as SVGPT
-from laser_svg_parser import separate_perims_from_cuts, parse_svgfile
+from laser_svg_parser import separate_perims_from_cuts, parse_svgfile, model_to_svg_file
 # from joint_generators import FlatJoint, BoxJoint, TslotJoint
+
+#used when run from the command line:
+import argparse, csv, sys
 
 
 class LaserParameters:
@@ -1258,4 +1262,105 @@ def paths_to_faces(paths):
                 model['tree'][f"face{index+1}"]['Cuts']['paths'].append(cut)
 
     return model
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process metaSVG for printing.')
+    parser.add_argument('--preset', help='preset to load (read from \'presets.csv\'); other arguments, if given, will override preset')
+
+    parser.add_argument('--thickness', help='material thickness (mm)', type=float)
+    parser.add_argument('--width', help='material width (mm)', type=float)
+    parser.add_argument('--height', help='material height (mm)', type=float)
+    parser.add_argument('--kerf', help='cut width (mm)', type=float)
+    parser.add_argument('--boxC', help='adjustment for clearance fit in box joint (mm)', type=float)
+    parser.add_argument('--boxL', help='adjustment for friction fit in box joint (mm)', type=float)
+    parser.add_argument('--boxI', help='adjustment for press fit in box joint (mm)', type=float)
+    parser.add_argument('--tabC', help='adjustment for clearance fit in tab-and-slot joint (mm)', type=float)
+    parser.add_argument('--tabL', help='adjustment for friction fit in tab-and-slot joint (mm)', type=float)
+    parser.add_argument('--tabI', help='adjustment for press fit in tab-and-slot joint (mm)', type=float)
+    parser.add_argument('--slotC', help='adjustment for clearance fit in slotted joint (mm)', type=float)
+    parser.add_argument('--slotL', help='adjustment for friction fit in slotted joint (mm)', type=float)
+    parser.add_argument('--slotI', help='adjustment for press fit in slotted joint (mm)', type=float)
+    parser.add_argument('--style', help='added style for output svg', type=str)
+    parser.add_argument('--notes', help='notes for preset [probably not used!]', type=str)
+
+    parser.add_argument('--scale', help='scale factor (default: 1.0)', type=float)
+    parser.add_argument('metasvg', help='metaSVG file to process')
+    parser.add_argument('outsvg', help='svg to output')
+    args = parser.parse_args()
+
+    print(f"Loading model from '{args.metasvg}'...")
+    model = svg_to_model(args.metasvg)
+    print(f"  Loaded model with {len(model['joints'])} joints")
+
+    #default params, replaced by --preset or modified by other --args
+    params = {
+        'thickness':0.0,
+        'width':0.0,
+        'height':0.0,
+        'kerf':0.0,
+        'boxC':0.0, 'boxL':0.0, 'boxI':0.0,
+        'tabC':0.0, 'tabL':0.0, 'tabI':0.0,
+        'slotC':0.0, 'slotL':0.0, 'slotI':0.0,
+        'style':'stroke:#000000;stroke-width:1px;',
+        'preset':None,
+        'notes':'',
+        'scale':1.0
+    }
+
+    if args.preset != None:
+        print(f"Looking for preset '{args.preset}' from 'presets.csv'...")
+        names = []
+        with open('presets.csv', 'r') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if 'preset' not in row:
+                    print("  Skipping row without 'preset' column.")
+                    continue
+                try:
+                    lp = LaserParameters(row) #see if row can be parsed into LaserParameters
+                except:
+                    print(f"  Skipping row '{row.preset}' that doesn't parse into LaserParameters")
+                    continue
+                names.append(row['preset'])
+                if row['preset'] == args.preset:
+                    params = row
+                    break
+        if params['preset'] == args.preset:
+            print(f"  Found preset '{args.preset}'.")
+        else:
+            print(f"  Failed to find preset '{args.preset}' in 'presets.csv'.\n  Available presets: {', '.join(names)}")
+            sys.exit(1)
+
+    for name in [
+        'scale',
+        'width',
+        'height',
+        'kerf',
+        'boxC', 'boxL', 'boxI',
+        'tabC', 'tabL', 'tabI',
+        'slotC', 'slotL', 'slotI',
+        'style',
+        'notes']:
+        if getattr(args, name) != None:
+            print(f"Setting {name} to {getattr(args, name)} .")
+            params[name] = getattr(args, name)
+
+    print(f"Converting presets/arguments to LaserParameters...")
+    params = LaserParameters(params)
+    print(f"  done.")
+
+    print(f"Using parameters:")
+    for name in dir(params):
+        if name.startswith("__"): continue
+        if name == "FIT_MAP": continue
+        if name == "get_fit": continue
+        print(f"  parameters.{name} = {repr(getattr(params, name))}")
+
+    print(f"Processing model...")
+    new_model = process_web_outputsvg(model, params)
+    print(f"Writing model to '{args.outsvg}'...")
+    model_to_svg_file(new_model, design=model, filename=args.outsvg)
+    print(f"  done.")
+
 
