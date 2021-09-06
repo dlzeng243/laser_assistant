@@ -16,8 +16,10 @@
     <!-- <button @click="uploadcsv">Upload New</button> -->
 
     <div class="preset">
-    <label for="notes">Notes:</label>
-    <textarea name="notes" v-model="notes" @change="applyParams"></textarea>
+    <p>
+      <label for="notes">Notes:</label>
+      <textarea name="notes" v-model="notes" @change="applyParams"></textarea>
+    </p>
 
     <!-- <p>
       <label for="material">Material:</label>
@@ -81,8 +83,9 @@
 
     </div>
 
-      
-    <button @click="downloadsvg">Download</button>
+    <div class="controls">
+    <button @click="downloadsvg">Save</button>
+    </div>
   </div>
 </template>
 
@@ -191,8 +194,82 @@ export default {
   grid-area: panel;
   background-color: #d2d8de;
   margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
+  padding:0;
+  border-radius: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  font-size:14px;
+  overflow:clip;
+}
+
+.params p:hover {
+ background:#fff4;
+}
+.params p {
+  margin:0;
+  padding:4px 8px;
+  display:flex;
+  flex-flow: row wrap;
+  justify-content:space-between;
+  align-items:center;
+}
+.params p label {
+}
+.params p input, .params select {
+  width:50%;
+}
+.params textarea {
+  width:50%;
+  resize:vertical;
+}
+
+.params input, .params select, .params textarea {
+  border:none;
+  background:#fff;
+  border-radius:4px;
+  padding:4px;
+}
+
+.params h1 {
+  font-size:16px;
+  font-weight:normal;
+  text-align:center;
+  margin:0;
+  padding:5px 10px;
+  background:#fff8;
+}
+
+.params h2 {
+  font-size:14px;
+  font-weight:normal;
+  background:#fff4;
+  padding: 5px 10px;
+}
+
+.params table {
+ margin: 0 auto;
+}
+.params table input {
+  width:60px;
+}
+
+.params .preset {
+  padding-left:8px;
+  border-left:4px solid #0002;
+  background:#0002;
+}
+
+.params .controls {
+  background:#fff8;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:5px 10px;
+}
+.params .controls button {
+  border:none;
+  background:#22d;
+  border-radius:3px;
+  padding:8px 10px;
+  color:#fff;
 }
 </style>

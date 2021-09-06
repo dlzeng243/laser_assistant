@@ -240,6 +240,8 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Oxygen&display=swap');
+
 body {
   margin: 0;
   display: flex;
@@ -247,7 +249,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 100vw;
-  font-family: sans-serif;
+  font-family: 'Oxygen', sans-serif;
 }
 
 .ui {
