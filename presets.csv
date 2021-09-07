@@ -1,9 +1,9 @@
 preset,notes,thickness,width,height,kerf,style,boxC,boxL,boxI,tabC,tabL,tabI,slotC,slotL,slotI
-plywood-fast,wood; p:100 s:5,3,450,300,0.05,stroke:#FF0000;stroke-width:0.01pt;,0.05,-0.05,-0.075,0.05,-0.05,-0.1,0.2,-0.05,-0.1
-plywood-default,wood; p:100 s:6.9,6,450,300,0.05,stroke:#FF0000;stroke-width:0.01pt;,0.1,0,-0.2,0.2,,,0.2,0,-0.1
-acrylic-default,acrylic; p:100 s:3.5,3,450,300,0.1,stroke:#FF0000;stroke-width:0.01pt;,0.1,0,NA,0.1,0,NA,0.15,-0.1,NA
+plywood-3mm,wood; p:100 s:5,3,450,300,0.05,stroke:#FF0000;stroke-width:1px;,-0.05,0.05,0.075,-0.05,0.05,0.1,-0.2,0.05,0.1
+plywood-6mm,wood; p:100 s:6.9,6,450,300,0.05,stroke:#FF0000;stroke-width:1px;,-0.1,0,0.2,-0.2,0.0,0.0,-0.2,0.0,0.1
+acrylic-3mm,acrylic; p:100 s:3.5,3,450,300,0.1,stroke:#FF0000;stroke-width:1px;,0.1,0,NA,0.1,0,NA,0.15,-0.1,NA
 mdf-default,wood; p:100 s:7,6,450,300,0.1,stroke:#FF0000;stroke-width:0.01pt;,,,,,,,,,
-jean-mdf-HQ,wood; p:90 s:6,3,450,300,0.1,stroke:#FF0000;stroke-width:0.01pt;,,,,,,,,,
+test-mdf-HQ,wood; p:90 s:6,3,450,300,0.1,stroke:#FF0000;stroke-width:0.01pt;,,,,,,,,,
 code-wood-thick,set in the code for > 4.5mm wood,5,400,300,0.05,stroke:#FF0000;stroke-width:0.01pt;,-0.05,0.05,0.075,-0.05,0.05,0.1,-0.2,0.05,0.1
 code-wood-thin,set in the code for <= 4.5mm wood,3,400,300,0.05,stroke:#FF0000;stroke-width:0.01pt;,-0.05,0.05,0.075,-0.05,0.05,0.1,-0.2,0.05,0.1
 code-none-thick,set in the code for > 4.5mm 'none',5,400,300,0.05,stroke:#FF0000;stroke-width:0.01pt;,0,0,0,0,0,0,0,0,0

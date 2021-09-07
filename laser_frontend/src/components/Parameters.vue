@@ -84,7 +84,7 @@
     </div>
 
     <div class="controls">
-    <button @click="downloadsvg">Save</button>
+    <button @click="downloadsvg">Export Cut Plan</button>
     </div>
   </div>
 </template>
@@ -117,7 +117,9 @@ export default {
   },
   mounted: function() {
     console.log("Presets as of mount: ", this.presets);
-    this.updatePresetsOptions();
+    this.$nextTick(() => {
+        this.updatePresetsOptions();
+    });
   },
   methods: {
     updatePresetsOptions: function() {
@@ -131,6 +133,11 @@ export default {
             option.value = preset["preset"];
             option.innerText = preset["preset"];
             select.appendChild(option);
+        }
+        if (this.presets.length > 0) {
+            this.preset = select.value = this.presets[0].preset;
+            console.log(`Applying ${select.value}`);
+            this.applyPreset();
         }
         //do the fancy thing where current preset is selected from params:
         this.applyParams();
@@ -199,6 +206,7 @@ export default {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   font-size:14px;
   overflow:clip;
+  width:292px;
 }
 
 .params p:hover {
@@ -271,5 +279,11 @@ export default {
   border-radius:3px;
   padding:8px 10px;
   color:#fff;
+}
+.params .controls button:hover {
+  background:#44f;
+}
+.params .controls button:active {
+  background:#11c;
 }
 </style>
