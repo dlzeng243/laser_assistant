@@ -6,7 +6,7 @@ Run the backend:
 $ python3 laser_flask.py
 ```
 
-Run the frontend: (may require you to
+Run the frontend:
 ```
 $ cd laser_frontend
 laser_frontend $ npm run serve
