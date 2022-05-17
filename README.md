@@ -21,6 +21,21 @@ git clone git@github.com:mathandy/svgpathtools.git; cd svgpathtools; python setu
 
 ## Usage
 
+Run the backend:
+```
+$ python3 laser_flask.py
+```
+
+Run the frontend: (may require you to
+```
+$ cd laser_frontend
+laser_frontend $ npm run serve
+```
+
+Connect to the frontend via web browser (http://localhost:8080).
+
+## Usage (old)
+
 ### Simple test with sample input: 
 
 ```
